@@ -1,11 +1,8 @@
 defmodule Gi.Command do
-  @type str :: binary
-  @type param :: [str]
-
   @type t :: %__MODULE__{
                command: :atom,
                sub_command: :atom,
-               param: param
+               param: [binary()]
              }
 
   defstruct command: nil,
