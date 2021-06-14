@@ -43,6 +43,14 @@ defmodule Gi.MixProject do
       extras: [
         "README.md",
         "LICENSE"
+      ],
+      groups_for_modules: [
+        # Gi,
+        "Types": [
+          Gi.Command,
+          Gi.Image
+        ]
+
       ]
     ]
   end

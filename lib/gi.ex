@@ -8,6 +8,9 @@ defmodule Gi do
 
   @doc """
   Opens image source, raises a `File.Error` exception in case of failure.
+  ## Parameters
+
+    - string_path: path to file image.
 
   ## Example
 
@@ -53,6 +56,10 @@ defmodule Gi do
 
   @doc """
   Mogrify image with option.
+  ## Options
+    - :resize - Resize image to value (WxH) or (WxH!).
+    - :format - Format image to value as jpg, png, webp...
+    - :draw - Draw text on image (text x,y 'string')...
 
   ## Example
 
@@ -81,8 +88,9 @@ defmodule Gi do
       |> Gi.gm_mogrify([resize: "300x200", draw: "text 150,150 'Theta.vn'"])
       |> Gi.save()
   """
-  def gm_mogrify(image, kw) do
-    param = Enum.reduce(kw, [], fn x, acc -> acc ++ ["-#{Atom.to_string(elem(x, 0))}", elem(x, 1)] end)
+  @spec gm_mogrify(Image.t(), Keyword.t()) :: Image.t()
+  def gm_mogrify(image, opts) do
+    param = Enum.reduce(opts, [], fn x, acc -> acc ++ ["-#{Atom.to_string(elem(x, 0))}", elem(x, 1)] end)
 
     c = %Command{
       command: :gm,
@@ -91,7 +99,7 @@ defmodule Gi do
     }
 
     format =
-      Keyword.pop_values(kw, :format)
+      Keyword.pop_values(opts, :format)
       |> elem(0)
       |> List.last
     dirty =
