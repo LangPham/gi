@@ -14,11 +14,11 @@ defmodule Gi do
 
   ## Example
 
-       iex>  Gi.open "example.jpg"
+       iex>  Gi.open("example.jpg")
        %Gi.Image{
   			 animated: false,
   			 dirty: %{},
-  			 ext: ".png",
+  			 ext: ".jpg",
   			 format: nil,
   			 frame_count: 1,
   			 height: nil,
@@ -39,27 +39,20 @@ defmodule Gi do
   end
 
   @doc """
-  Save image.
-
-  ## Example
-
-      Gi.save()
-  """
-  @spec save(Image.t()) :: Image.t()
-  def save(image) do
-    if length(image.list_command) == 0 do
-      image
-    else
-      do_command(image)
-    end
-  end
-
-  @doc """
   Mogrify image with option.
   ## Options
-    - :resize - Resize image to value (WxH) or (WxH!).
+    - :resize - Resize image to value "WxH" or "WxH!".
+      - "WxH" keep ratio of the original image.
+        - Example: "400x300", "150x100" ...
+      - "WxH!" exact size.
+        - Example: "300x200!", "200x100!" ...
     - :format - Format image to value as jpg, png, webp...
-    - :draw - Draw text on image (text x,y 'string')...
+    - :draw - Draw object on image:
+      - "text x,y string" - draw string at position x,y.
+        - Example: "text 150,150 'Theta.vn'"
+      - "image Over x,y,w,h file" - draw file on image at position x,y with width w va height h.
+        - Example: "image Over 0,0,400,600 d/logo.png"
+    - :pointsize - pointsize of the PostScript, X11, or TrueType font for text, value as integer.
 
   ## Example
 
@@ -78,9 +71,19 @@ defmodule Gi do
       |> Gi.gm_mogrify(format: "webp")
       |> Gi.save() # => create new file "example.webp"
 
-      # Draw text on image (text x,y 'string')
+      # Draw text on image "text x,y string"
       Gi.open("example.jpg")
-      |> Gi.gm_mogrify(draw: "text 150,150 'Theta.vn'")
+      |> Gi.gm_mogrify(draw: "text 150,150 'Lang Pham'")
+      |> Gi.save()
+
+      # Draw text on image "text x,y string" with pointsize,
+      Gi.open("example.jpg")
+      |> Gi.gm_mogrify([pointsize: 30, draw: "text 150,150 'Lang Pham'"])
+      |> Gi.save()
+
+      # Draw image on image "image Over x,y,w,h file"
+      Gi.open("example.jpg")
+      |> Gi.gm_mogrify(draw: "image Over 100,100,200, 200 dir/logo.a")
       |> Gi.save()
 
       # Multi utilities
@@ -110,6 +113,83 @@ defmodule Gi do
     image = %{image | dirty: dirty}
 
     add_command(image, c)
+  end
+
+  @doc """
+  Get information of image.
+
+  ## Example
+
+       iex> Gi.open("example.jpg")
+       iex> |> Gi.gm_identify
+       %Gi.Image{
+  			 animated: false,
+  			 dirty: %{},
+  			 ext: ".jpg",
+  			 format: "JPEG (Joint Photographic Experts Group JFIF format)",
+  			 frame_count: 1,
+  			 height: 400,
+  			 list_command: [],
+  			 path: "example.jpg",
+  			 width: 300
+  			}
+  """
+  @spec gm_identify(Image.t()) :: Image.t()
+  def gm_identify(image) do
+    # Todo: check animated
+    {output, 0} = System.cmd("gm", ["identify", "-verbose", image.path])
+    geo = Regex.named_captures(~r/Geometry: (?<geometry>\w+)/, output)
+    geo = Regex.named_captures(~r/(?<width>\w+)x(?<height>\d+)/, geo["geometry"])
+    format = Regex.named_captures(~r/Format: (?<format>[[:alnum:][:blank:]()]+)/, output)
+    Map.merge(format, geo)
+    |> Enum.reduce(image, fn {k, v}, acc -> Map.put(acc, String.to_atom(k), v)  end)
+  end
+
+  @doc """
+  Save image.
+  ## Options
+    - :path - Value as path. Save as image to path
+
+  ## Example
+      Gi.open("example.jpg")
+      |> Gi.save()
+
+      Gi.open("example.jpg")
+      |> Gi.save(path: "new_example.jpg")
+  """
+  @spec save(Image.t(), Keyword.t()) :: Image.t()
+  def save(image, opt \\ []) do
+    save_as = Keyword.get(opt, :path)
+    case save_as do
+      nil -> do_save(image)
+      path -> do_save_as(image, path)
+    end
+  end
+
+  @spec do_save_as(Image.t(), String.t()) :: Image.t()
+  defp do_save_as(image, path) do
+    path_new =
+      path
+      |> String.trim(".")
+      |> Path.expand()
+    dir_name = Path.dirname(path_new)
+    File.mkdir_p!(dir_name)
+    File.cp(image.path, path_new)
+    image = %{image | path: path_new}
+    if length(image.list_command) == 0 do
+      image
+    else
+      do_command(image)
+    end
+  end
+
+  @spec do_save(Image.t()) :: Image.t()
+  defp do_save(image) do
+    if length(image.list_command) == 0 do
+      image
+    else
+      do_command(image)
+    end
   end
 
   @spec add_command(Image.t(), command) :: Image.t() when command: Command.t()
@@ -146,4 +226,6 @@ defmodule Gi do
 
     end
   end
+
+
 end

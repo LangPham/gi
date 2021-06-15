@@ -1,7 +1,7 @@
 defmodule Gi.MixProject do
   use Mix.Project
 
-  @source_url "https://github.com/elixir-ecto/ecto"
+  @source_url "https://github.com/LangPham/gi"
   @version "0.1.0"
 
   def project do
@@ -11,6 +11,10 @@ defmodule Gi.MixProject do
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+
+      # Hex
+      description: "Gi is a library for manipulating Graphics Interfacing. Use utility mogrify, identify, ... of GraphicsMagick to resize, draw on base images....",
+      package: package(),
 
       # Docs
       name: "Gi",
@@ -25,11 +29,17 @@ defmodule Gi.MixProject do
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
+  defp package do
+    [
+      files: ~w(lib mix.exs README LICENSE .formatter.exs),
+      maintainers: ["LangPham"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => @source_url}
+    ]
+  end
+
   defp deps do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
       {:ex_doc, "~> 0.24", only: :dev, runtime: false},
     ]
   end
@@ -37,8 +47,8 @@ defmodule Gi.MixProject do
   defp docs do
     [
       main: "Gi", # The main page in the docs
-      source_url: "https://github.com/LangPham/gi",
-      homepage_url: "https://github.com/LangPham/gi",
+      source_url: @source_url,
+      homepage_url: @source_url,
       logo: "guides/images/logo.svg",
       extras: [
         "README.md",

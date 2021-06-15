@@ -1,6 +1,6 @@
 # Gi
 
-Gi is a library for manipulating Graphics Interfacing. Works with GraphicsMagick to resize, draw on base images...
+Gi is a library for manipulating Graphics Interfacing. Use utility mogrify, identify, ... of GraphicsMagick to resize, draw on base images....
 
 ## Requirements
 You must have [GraphicsMagick](http://www.graphicsmagick.org/) installed of course.
@@ -25,12 +25,20 @@ Gi.open("example.jpg")
 |> Gi.gm_mogrify(format: "webp")
 |> Gi.save() # => create new file "example.webp"  
 ```  
-* Draw text on image (text x,y 'string')
+* Draw text on image text x,y 'string')
 ```
 Gi.open("example.jpg")
 |> Gi.gm_mogrify(draw: "text 150,150 'Theta.vn'")
 |> Gi.save() 
 ```  
+
+* Draw image on image "image Over x,y,w,h file"
+```
+Gi.open("example.jpg")
+|> Gi.gm_mogrify(draw: "image Over 100,100,200, 200 dir/logo.a")
+|> Gi.save()
+```
+
 * Multi utilities
 ```
 Gi.open("example.jpg")
