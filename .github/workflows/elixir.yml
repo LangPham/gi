@@ -25,6 +25,8 @@ jobs:
         path: deps
         key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
         restore-keys: ${{ runner.os }}-mix-
+    - name: Install Graphic
+      run: sudo apt-get install -y graphicsmagick
     - name: Install dependencies
       run: mix deps.get
     - name: Run tests
