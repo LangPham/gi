@@ -23,9 +23,9 @@ Gi.open("example.jpg") # example.jpg (300x200)
 ```
 Gi.open("example.jpg")
 |> Gi.gm_mogrify(format: "webp")
-|> Gi.save() # => create new file "example.webp"  
+|> Gi.save() # => create new file "example.webp"
 ```  
-* Draw text on image text x,y 'string')
+* Draw text on image text x,y 'string'
 ```
 Gi.open("example.jpg")
 |> Gi.gm_mogrify(draw: "text 150,150 'Theta.vn'")

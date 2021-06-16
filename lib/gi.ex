@@ -10,32 +10,101 @@ defmodule Gi do
   Opens image source, raises a `File.Error` exception in case of failure.
   ## Parameters
 
-    - string_path: path to file image.
+    - path: path to file image.
 
   ## Example
 
-       iex>  Gi.open("example.jpg")
-       %Gi.Image{
-  			 animated: false,
-  			 dirty: %{},
-  			 ext: ".jpg",
-  			 format: nil,
-  			 frame_count: 1,
-  			 height: nil,
-  			 list_command: [],
-  			 path: "example.jpg",
-  			 width: nil
-  			}
+      iex>  Gi.open("test/example.jpg")
+      %Gi.Image{
+        animated: false,
+        dirty: %{},
+        ext: ".jpg",
+        format: nil,
+        frame_count: 1,
+        height: nil,
+        list_command: [],
+        path: "test/example.jpg",
+        width: nil
+      }
   """
   @spec open(binary()) :: Image.t()
-  def open(string_path) do
-    path =
-      string_path
-      |> String.trim(".")
-      |> Path.expand()
+  def open(path) do
     unless File.regular?(path), do: raise(File.Error)
-
     %Image{path: path, ext: Path.extname(path)}
+  end
+
+  @doc """
+  Get information of image.
+
+  ## Example
+
+      iex>  Gi.open("test/example.jpg")
+      ...>  |> Gi.gm_identify
+      %Gi.Image{
+        animated: false,
+        dirty: %{},
+        ext: ".jpg",
+        format: "JPEG (Joint Photographic Experts Group JFIF format)",
+        frame_count: 1,
+        height: 312,
+        list_command: [],
+        path: "test/example.jpg",
+        width: 820
+      }
+  """
+  @spec gm_identify(Image.t()) :: Image.t()
+  def gm_identify(image) do
+    # Todo: check animated
+    {output, 0} = System.cmd("gm", ["identify", "-verbose", image.path])
+    format = Regex.named_captures(~r/Format: (?<format>[[:alnum:][:blank:]()]+)/, output)
+    image = %{image | format: format["format"]}
+
+    geo = Regex.named_captures(~r/Geometry: (?<geometry>\w+)/, output)
+    Regex.named_captures(~r/(?<width>\w+)x(?<height>\d+)/, geo["geometry"])
+    |> Enum.reduce(image, fn {k, v}, acc -> Map.put(acc, String.to_atom(k), String.to_integer(v))  end)
+  end
+
+  @doc """
+  Save image.
+  ## Options
+    - :path - Value as path. Save as image to path
+
+  ## Example
+      iex>  Gi.open("test/example.jpg")
+      ...>  |> Gi.save()
+      %Gi.Image{
+        animated: false,
+        dirty: %{},
+        ext: ".jpg",
+        format: nil,
+        frame_count: 1,
+        height: nil,
+        list_command: [],
+        path: "test/example.jpg",
+        width: nil
+      }
+
+      iex>  Gi.open("test/example.jpg")
+      ...>  |> Gi.save(path: "test/new_example.jpg")
+      %Gi.Image{
+        animated: false,
+        dirty: %{},
+        ext: ".jpg",
+        format: nil,
+        frame_count: 1,
+        height: nil,
+        list_command: [],
+        path: "test/new_example.jpg",
+        width: nil
+      }
+  """
+  @spec save(Image.t(), Keyword.t()) :: Image.t()
+  def save(image, opt \\ []) do
+    save_as = Keyword.get(opt, :path)
+    case save_as do
+      nil -> do_save(image)
+      path -> do_save_as(image, path)
+    end
   end
 
   @doc """
@@ -57,9 +126,23 @@ defmodule Gi do
   ## Example
 
       # Resize image to width x height with ratio (WxH)
-      Gi.open("example.jpg") # example.jpg (300x200)
-      |> Gi.gm_mogrify(resize: "200x100")
-      |> Gi.save() # => example.jpg (150x100)
+      iex>  Gi.open("test/example.jpg")
+      ...>  |> Gi.gm_mogrify(resize: "200x100")
+      ...>  |> Gi.save(path: "test/example_resize.jpg")
+
+      iex>  Gi.open("test/example_resize.jpg")
+      ...>  |> Gi.gm_identify
+      %Gi.Image{
+        animated: false,
+        dirty: %{},
+        ext: ".jpg",
+        format: "JPEG (Joint Photographic Experts Group JFIF format)",
+        frame_count: 1,
+        height: 76,
+        list_command: [],
+        path: "test/example_resize.jpg",
+        width: 200
+      }
 
       # Resize image to width x height (WxH!)
       Gi.open("example.jpg") # example.jpg (300x200)
@@ -115,67 +198,12 @@ defmodule Gi do
     add_command(image, c)
   end
 
-  @doc """
-  Get information of image.
-
-  ## Example
-
-       iex> Gi.open("example.jpg")
-       iex> |> Gi.gm_identify
-       %Gi.Image{
-  			 animated: false,
-  			 dirty: %{},
-  			 ext: ".jpg",
-  			 format: "JPEG (Joint Photographic Experts Group JFIF format)",
-  			 frame_count: 1,
-  			 height: 400,
-  			 list_command: [],
-  			 path: "example.jpg",
-  			 width: 300
-  			}
-  """
-  @spec gm_identify(Image.t()) :: Image.t()
-  def gm_identify(image) do
-    # Todo: check animated
-    {output, 0} = System.cmd("gm", ["identify", "-verbose", image.path])
-    geo = Regex.named_captures(~r/Geometry: (?<geometry>\w+)/, output)
-    geo = Regex.named_captures(~r/(?<width>\w+)x(?<height>\d+)/, geo["geometry"])
-    format = Regex.named_captures(~r/Format: (?<format>[[:alnum:][:blank:]()]+)/, output)
-    Map.merge(format, geo)
-    |> Enum.reduce(image, fn {k, v}, acc -> Map.put(acc, String.to_atom(k), v)  end)
-  end
-
-  @doc """
-  Save image.
-  ## Options
-    - :path - Value as path. Save as image to path
-
-  ## Example
-      Gi.open("example.jpg")
-      |> Gi.save()
-
-      Gi.open("example.jpg")
-      |> Gi.save(path: "new_example.jpg")
-  """
-  @spec save(Image.t(), Keyword.t()) :: Image.t()
-  def save(image, opt \\ []) do
-    save_as = Keyword.get(opt, :path)
-    case save_as do
-      nil -> do_save(image)
-      path -> do_save_as(image, path)
-    end
-  end
-
   @spec do_save_as(Image.t(), String.t()) :: Image.t()
   defp do_save_as(image, path) do
-    path_new =
-      path
-      |> String.trim(".")
-      |> Path.expand()
-    dir_name = Path.dirname(path_new)
+    dir_name = Path.dirname(path)
     File.mkdir_p!(dir_name)
-    File.cp(image.path, path_new)
-    image = %{image | path: path_new}
+    File.cp(image.path, path)
+    image = %{image | path: path}
     if length(image.list_command) == 0 do
       image
     else
@@ -226,6 +254,5 @@ defmodule Gi do
 
     end
   end
-
 
 end
