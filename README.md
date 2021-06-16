@@ -1,4 +1,5 @@
 # Gi
+[![Elixir CI](https://github.com/LangPham/gi/actions/workflows/elixir.yml/badge.svg)](https://github.com/LangPham/gi/actions/workflows/elixir.yml)
 
 Gi is a library for manipulating Graphics Interfacing. Use utility mogrify, identify, ... of GraphicsMagick to resize, draw on base images....
 
