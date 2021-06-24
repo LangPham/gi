@@ -11,39 +11,39 @@ You must have [GraphicsMagick](http://www.graphicsmagick.org/) installed of cour
 ## Features
 Utilities for image:
 * Resize image to width x height with ratio (WxH)
-```
+```elixir
 Gi.open("example.jpg") # example.jpg (300x200)
 |> Gi.gm_mogrify(resize: "200x100")
 |> Gi.save() # => example.jpg (150x100)
 ```
 * Resize image to width x height (WxH!)
-```
+```elixir
 Gi.open("example.jpg") # example.jpg (300x200)
 |> Gi.gm_mogrify(resize: "200x100!")
 |> Gi.save() # => example.jpg (200x100)
 ```
 * Format image to jpg, png, webp, ...
-```
+```elixir
 Gi.open("example.jpg")
 |> Gi.gm_mogrify(format: "webp")
 |> Gi.save() # => create new file "example.webp"
 ```  
 * Draw text on image text x,y 'string'
-```
+```elixir
 Gi.open("example.jpg")
 |> Gi.gm_mogrify(draw: "text 150,150 'Theta.vn'")
 |> Gi.save() 
 ```  
 
 * Draw image on image "image Over x,y,w,h file"
-```
+```elixir
 Gi.open("example.jpg")
 |> Gi.gm_mogrify(draw: "image Over 100,100,200, 200 dir/logo.a")
 |> Gi.save()
 ```
 
 * Multi utilities
-```
+```elixir
 Gi.open("example.jpg")
 |> Gi.gm_mogrify([resize: "300x200", draw: "text 150,150 'Theta.vn'"])
 |> Gi.save()
