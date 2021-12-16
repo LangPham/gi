@@ -198,6 +198,19 @@ defmodule Gi do
     add_command(image, c)
   end
 
+  def gm_composite(image, opts) do
+    param = opts
+  
+    c = %Command{
+      command: :gm,
+      sub_command: :composite,
+      param: param
+    }
+    
+    add_command(image, c)
+    |> do_command()
+  end
+
   @spec do_save_as(Image.t(), String.t()) :: Image.t()
   defp do_save_as(image, path) do
     dir_name = Path.dirname(path)
@@ -250,6 +263,18 @@ defmodule Gi do
             file = image.path
             %{image | path: "#{Path.rootname(file)}.#{ext}"}
         end
+  
+      :composite ->
+        param = action.param
+        if length(param) < 2 do
+          image
+        else
+          {_head, tail} = Enum.split(param, -1)
+          param_with_path = [Atom.to_string(action.sub_command) ] ++ [image.path | param]
+          System.cmd(Atom.to_string(action.command), param_with_path)
+          %{image | path: tail}
+        end
+        
       _ -> image #Todo: for sub command
 
     end

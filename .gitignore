@@ -25,6 +25,8 @@ gi-*.tar
 # Temporary files for e.g. tests
 /tmp
 
+/.DS_Store
+
 # Files and directory of IDE
 /.idea/
 gi.iml
