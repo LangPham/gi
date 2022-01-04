@@ -48,7 +48,12 @@ Gi.open("example.jpg")
 |> Gi.gm_mogrify([resize: "300x200", draw: "text 150,150 'Theta.vn'"])
 |> Gi.save()
 ```
-  
+
+* Combine multiple images into one
+```elixir
+Gi.open("frame.png")
+|> Gi.gm_composite(["background.jpg","result.png"])
+```  
 
 ## Installation
 

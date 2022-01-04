@@ -60,8 +60,11 @@ defmodule Gi do
     image = %{image | format: format["format"]}
 
     geo = Regex.named_captures(~r/Geometry: (?<geometry>\w+)/, output)
+
     Regex.named_captures(~r/(?<width>\w+)x(?<height>\d+)/, geo["geometry"])
-    |> Enum.reduce(image, fn {k, v}, acc -> Map.put(acc, String.to_atom(k), String.to_integer(v))  end)
+    |> Enum.reduce(image, fn {k, v}, acc ->
+      Map.put(acc, String.to_atom(k), String.to_integer(v))
+    end)
   end
 
   @doc """
@@ -101,6 +104,7 @@ defmodule Gi do
   @spec save(Image.t(), Keyword.t()) :: Image.t()
   def save(image, opt \\ []) do
     save_as = Keyword.get(opt, :path)
+
     case save_as do
       nil -> do_save(image)
       path -> do_save_as(image, path)
@@ -176,7 +180,8 @@ defmodule Gi do
   """
   @spec gm_mogrify(Image.t(), Keyword.t()) :: Image.t()
   def gm_mogrify(image, opts) do
-    param = Enum.reduce(opts, [], fn x, acc -> acc ++ ["-#{Atom.to_string(elem(x, 0))}", elem(x, 1)] end)
+    param =
+      Enum.reduce(opts, [], fn x, acc -> acc ++ ["-#{Atom.to_string(elem(x, 0))}", elem(x, 1)] end)
 
     c = %Command{
       command: :gm,
@@ -187,26 +192,49 @@ defmodule Gi do
     format =
       Keyword.pop_values(opts, :format)
       |> elem(0)
-      |> List.last
+      |> List.last()
+
     dirty =
       case format do
         nil -> %{}
         ext -> %{mogrify_format: ext}
       end
+
     image = %{image | dirty: dirty}
 
     add_command(image, c)
   end
 
-  def gm_composite(image, opts) do
-    param = opts
-  
+  @doc """
+   Combine multiple images into one
+   
+  ## Example
+
+      # Combine multiple images into one
+      iex>  Gi.open("test/frame.png")
+      ...>  |> Gi.gm_composite(["test/example.jpg","test/save.png"])
+      %Gi.Image{
+        animated: false,
+        dirty: %{},
+        ext: ".png",
+        format: nil,
+        frame_count: 1,
+        height: nil,
+        list_command: [],
+        path: "test/save.png",
+        width: nil
+      }
+  """
+  @spec gm_composite(Image.t(), []) :: Image.t()
+  def gm_composite(image, list_path) do
+    param = list_path
+
     c = %Command{
       command: :gm,
       sub_command: :composite,
       param: param
     }
-    
+
     add_command(image, c)
     |> do_command()
   end
@@ -217,6 +245,7 @@ defmodule Gi do
     File.mkdir_p!(dir_name)
     File.cp(image.path, path)
     image = %{image | path: path}
+
     if length(image.list_command) == 0 do
       image
     else
@@ -238,6 +267,7 @@ defmodule Gi do
     command = image.list_command ++ [command]
     %{image | list_command: command}
   end
+
   defp add_command(image, _), do: image
 
   defp do_command(image) do
@@ -253,31 +283,38 @@ defmodule Gi do
 
   defp do_gm(image, action) do
     case action.sub_command do
-      nil -> image
+      nil ->
+        image
+
       :mogrify ->
         param = [Atom.to_string(action.sub_command) | action.param] ++ [image.path]
         System.cmd(Atom.to_string(action.command), param)
+
         case Map.get(image.dirty, :mogrify_format) do
-          nil -> image
+          nil ->
+            image
+
           ext ->
             file = image.path
             %{image | path: "#{Path.rootname(file)}.#{ext}"}
         end
-  
+
       :composite ->
         param = action.param
+
         if length(param) < 2 do
           image
         else
           {_head, tail} = Enum.split(param, -1)
-          param_with_path = [Atom.to_string(action.sub_command) ] ++ [image.path | param]
+          param_with_path = [Atom.to_string(action.sub_command)] ++ [image.path | param]
           System.cmd(Atom.to_string(action.command), param_with_path)
-          %{image | path: tail}
-        end
-        
-      _ -> image #Todo: for sub command
 
+          result = %{image | path: List.first(tail)}
+          %{result | list_command: []}
+        end
+
+      _ ->
+        image
     end
   end
-
 end

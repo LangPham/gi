@@ -2,7 +2,7 @@ defmodule Gi.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/LangPham/gi"
-  @version "0.1.0"
+  @version "0.1.2"
 
   def project do
     [
@@ -13,7 +13,8 @@ defmodule Gi.MixProject do
       deps: deps(),
 
       # Hex
-      description: "Gi is a library for manipulating Graphics Interfacing. Use utility mogrify, identify, ... of GraphicsMagick to resize, draw on base images....",
+      description:
+        "Gi is a library for manipulating Graphics Interfacing. Use utility mogrify, identify, ... of GraphicsMagick to resize, draw on base images....",
       package: package(),
 
       # Docs
@@ -40,13 +41,14 @@ defmodule Gi.MixProject do
 
   defp deps do
     [
-      {:ex_doc, "~> 0.24", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.24", only: :dev, runtime: false}
     ]
   end
 
   defp docs do
     [
-      main: "Gi", # The main page in the docs
+      # The main page in the docs
+      main: "Gi",
       source_url: @source_url,
       homepage_url: @source_url,
       logo: "guides/images/logo.svg",
@@ -56,13 +58,11 @@ defmodule Gi.MixProject do
       ],
       groups_for_modules: [
         # Gi,
-        "Types": [
+        Types: [
           Gi.Command,
           Gi.Image
         ]
-
       ]
     ]
   end
-
 end
