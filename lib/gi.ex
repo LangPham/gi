@@ -27,10 +27,15 @@ defmodule Gi do
         width: nil
       }
   """
-  @spec open(binary()) :: Image.t()
+  # @spec open(binary()) :: Image.t()
+  # def open(path) do
+  #   unless File.regular?(path), do: raise(File.Error)
+  #   %Image{path: path, ext: Path.extname(path)}
+  # end
+
+
   def open(path) do
-    unless File.regular?(path), do: raise(File.Error)
-    %Image{path: path, ext: Path.extname(path)}
+    Gi.Rust.open(path)
   end
 
   @doc """
@@ -207,7 +212,7 @@ defmodule Gi do
 
   @doc """
    Combine multiple images into one
-   
+
   ## Example
 
       # Combine multiple images into one
