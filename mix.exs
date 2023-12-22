@@ -2,13 +2,13 @@ defmodule Gi.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/LangPham/gi"
-  @version "0.1.2"
+  @version "0.2.0"
 
   def project do
     [
       app: :gi,
       version: @version,
-      elixir: "~> 1.11",
+      elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
 
@@ -57,7 +57,6 @@ defmodule Gi.MixProject do
         "LICENSE"
       ],
       groups_for_modules: [
-        # Gi,
         Types: [
           Gi.Command,
           Gi.Image

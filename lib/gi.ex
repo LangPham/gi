@@ -4,7 +4,7 @@ defmodule Gi do
   """
   import Gi.Command
   import Gi.Image
-  alias Gi.{Image, Command}
+  alias Gi.{Image, Command, Error}
 
   @doc """
   Opens image source, raises a `File.Error` exception in case of failure.
@@ -27,10 +27,13 @@ defmodule Gi do
         width: nil
       }
   """
-  @spec open(binary()) :: Image.t()
+  @spec open(binary()) :: Image.t() | Error.t()
   def open(path) do
-    unless File.regular?(path), do: raise(File.Error)
-    %Image{path: path, ext: Path.extname(path)}
+    if !File.regular?(path) do
+      %Error{message: :not_found}
+    else
+      %Image{path: path, ext: Path.extname(path)}
+    end
   end
 
   @doc """
@@ -207,7 +210,7 @@ defmodule Gi do
 
   @doc """
    Combine multiple images into one
-   
+
   ## Example
 
       # Combine multiple images into one
@@ -268,6 +271,7 @@ defmodule Gi do
     %{image | list_command: command}
   end
 
+  @spec add_command(Image.t(), command) :: Image.t() when command: Command.t()
   defp add_command(image, _), do: image
 
   defp do_command(image) do
