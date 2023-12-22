@@ -22,4 +22,11 @@ defmodule GiTest do
              dirty: %{}
            }
   end
+
+  test "gm_mogrify fail" do
+    Gi.open("test/example1.jpg")
+    |> Gi.gm_mogrify(resize: "700x500")
+    |> dbg()
+    |> Gi.save(path: "test/example_700x500.jpg")
+  end
 end

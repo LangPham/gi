@@ -1,4 +1,7 @@
 defmodule Gi.Error do
+  @type t :: %__MODULE__{
+          message: binary()
+        }
   defexception [:message]
 
   @impl true

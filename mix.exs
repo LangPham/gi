@@ -2,7 +2,7 @@ defmodule Gi.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/LangPham/gi"
-  @version "0.2.0"
+  @version "0.2.1"
 
   def project do
     [
@@ -59,7 +59,8 @@ defmodule Gi.MixProject do
       groups_for_modules: [
         Types: [
           Gi.Command,
-          Gi.Image
+          Gi.Image,
+          Gi.Error
         ]
       ]
     ]

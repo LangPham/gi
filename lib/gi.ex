@@ -7,7 +7,7 @@ defmodule Gi do
   alias Gi.{Image, Command, Error}
 
   @doc """
-  Opens image source, raises a `File.Error` exception in case of failure.
+  Opens image source, return Gi.Image.t() | Gi.Error.t().
   ## Parameters
 
     - path: path to file image.
@@ -104,15 +104,22 @@ defmodule Gi do
         width: nil
       }
   """
-  @spec save(Image.t(), Keyword.t()) :: Image.t()
+  @spec save(Image.t() | Error.t(), Keyword.t()) :: Image.t() | Error.t()
   def save(image, opt \\ []) do
-    save_as = Keyword.get(opt, :path)
+    if is_image(image) do
+      save_as = Keyword.get(opt, :path)
 
-    case save_as do
-      nil -> do_save(image)
-      path -> do_save_as(image, path)
+      case save_as do
+        nil -> do_save(image)
+        path -> do_save_as(image, path)
+      end
+    else
+      image
     end
   end
+
+  # @spec save(Image.t(), Keyword.t()) :: Image.t() | Error.t()
+  # def save(image, _opts), do: image
 
   @doc """
   Mogrify image with option.
@@ -181,8 +188,8 @@ defmodule Gi do
       |> Gi.gm_mogrify([resize: "300x200", draw: "text 150,150 'Theta.vn'"])
       |> Gi.save()
   """
-  @spec gm_mogrify(Image.t(), Keyword.t()) :: Image.t()
-  def gm_mogrify(image, opts) do
+  @spec gm_mogrify(Image.t() | Error.t(), Keyword.t()) :: Image.t() | Error.t()
+  def gm_mogrify(image, opts) when is_image(image) do
     param =
       Enum.reduce(opts, [], fn x, acc -> acc ++ ["-#{Atom.to_string(elem(x, 0))}", elem(x, 1)] end)
 
@@ -207,6 +214,8 @@ defmodule Gi do
 
     add_command(image, c)
   end
+
+  def gm_mogrify(image, _opts), do: image
 
   @doc """
    Combine multiple images into one

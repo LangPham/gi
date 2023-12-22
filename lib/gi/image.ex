@@ -22,4 +22,6 @@ defmodule Gi.Image do
             frame_count: 1,
             list_command: [],
             dirty: %{}
+
+  defguard is_image(value) when value.__struct__ == __MODULE__
 end
